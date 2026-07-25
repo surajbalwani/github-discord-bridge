@@ -50,6 +50,10 @@ export default async function Dashboard() {
               <Activity className="w-4 h-4" />
               Activity Logs
             </Link>
+            <Link href="/dashboard/settings" className="flex items-center gap-2 text-sm text-gray-400 hover:text-white transition-colors">
+              <Settings className="w-4 h-4" />
+              Settings
+            </Link>
             <div className="text-sm text-gray-400 hidden sm:block">{user.email}</div>
             <form action="/auth/signout" method="post">
               <button className="p-2 text-gray-400 hover:text-white rounded-lg hover:bg-white/5 transition-colors">
