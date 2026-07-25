@@ -3,7 +3,13 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Activity, CheckCircle, XCircle, Clock } from "lucide-react";
 
-export default async function LogsPage() {
+export default async function LogsPage({ searchParams }: { searchParams: Promise<{ page?: string }> }) {
+  const resolvedParams = await searchParams;
+  const page = parseInt(resolvedParams.page || "1", 10);
+  const limit = 20;
+  const from = (page - 1) * limit;
+  const to = from + limit - 1;
+
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
@@ -11,14 +17,14 @@ export default async function LogsPage() {
     redirect("/");
   }
 
-  // Fetch the latest 50 logs. We don't filter by user yet since webhook_logs doesn't have a user_id, 
-  // but in a multi-tenant app we would join with rules table to filter by user's repos.
-  // For this single-user tool, fetching all is fine.
-  const { data: logs } = await supabase
+  // Fetch paginated logs
+  const { data: logs, count } = await supabase
     .from("webhook_logs")
-    .select("*")
+    .select("*", { count: "exact" })
     .order("created_at", { ascending: false })
-    .limit(50);
+    .range(from, to);
+
+  const totalPages = count ? Math.ceil(count / limit) : 0;
 
   const formatTime = (isoString: string) => {
     return new Date(isoString).toLocaleString();
@@ -78,14 +84,45 @@ export default async function LogsPage() {
                     </div>
                   </div>
                   
-                  <div className="bg-black/50 p-4 rounded-xl border border-white/5 text-sm font-mono text-gray-300 overflow-x-auto">
-                    {JSON.stringify(log.details, null, 2)}
+                  <div className="mt-4">
+                    <details className="group">
+                      <summary className="cursor-pointer text-sm text-[#5865F2] font-medium hover:underline flex items-center gap-1 w-max">
+                        <span className="group-open:hidden">▶ Show JSON Payload</span>
+                        <span className="hidden group-open:inline">▼ Hide JSON Payload</span>
+                      </summary>
+                      <div className="mt-2 bg-black/60 p-4 rounded-xl border border-white/5 text-xs font-mono text-green-300 overflow-x-auto shadow-inner">
+                        <pre>{JSON.stringify(log.details, null, 2)}</pre>
+                      </div>
+                    </details>
                   </div>
                 </div>
               ))}
             </div>
           )}
         </div>
+
+        {/* Pagination Controls */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-center gap-4 mt-8">
+            {page > 1 ? (
+              <Link href={`/dashboard/logs?page=${page - 1}`} className="px-4 py-2 bg-white/5 hover:bg-white/10 rounded-lg text-sm font-medium transition-colors border border-white/10">
+                Previous
+              </Link>
+            ) : (
+              <div className="px-4 py-2 opacity-50 cursor-not-allowed rounded-lg text-sm font-medium border border-white/10">Previous</div>
+            )}
+            
+            <span className="text-sm text-gray-400">Page {page} of {totalPages}</span>
+            
+            {page < totalPages ? (
+              <Link href={`/dashboard/logs?page=${page + 1}`} className="px-4 py-2 bg-white/5 hover:bg-white/10 rounded-lg text-sm font-medium transition-colors border border-white/10">
+                Next
+              </Link>
+            ) : (
+              <div className="px-4 py-2 opacity-50 cursor-not-allowed rounded-lg text-sm font-medium border border-white/10">Next</div>
+            )}
+          </div>
+        )}
       </main>
     </div>
   );
