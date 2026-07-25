@@ -156,6 +156,9 @@ export default async function Dashboard() {
                          {rule.is_active !== false ? "Pause" : "Resume"}
                        </button>
                      </form>
+                     <Link href={`/dashboard/edit/${rule.id}`} className="text-blue-400 hover:text-blue-300 text-sm font-medium hover:bg-blue-400/10 px-3 py-1.5 rounded transition-colors">
+                       Edit
+                     </Link>
                      <form action="/api/rules/delete" method="POST">
                        <input type="hidden" name="rule_id" value={rule.id} />
                        <button className="text-red-400 hover:text-red-300 text-sm font-medium hover:bg-red-400/10 px-3 py-1.5 rounded transition-colors">
