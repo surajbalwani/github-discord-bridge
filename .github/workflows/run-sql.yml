@@ -1,0 +1,17 @@
+name: Run Database Migrations
+on:
+  push:
+    paths:
+      - 'final_schema.sql'
+  workflow_dispatch:
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Run SQL
+        env:
+          DB_URL: "postgresql://postgres:Sona%40Rajesh%4024999@db.ouhwxkqbndvmmxyjvird.supabase.co:5432/postgres"
+        run: |
+          psql $DB_URL -f final_schema.sql
