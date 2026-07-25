@@ -135,20 +135,34 @@ export default async function Dashboard() {
                  <div key={rule.id} className="p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 hover:bg-white/5 transition-colors">
                    <div>
                      <div className="flex items-center gap-2 mb-1">
-                       <span className="font-bold text-lg">{rule.github_repo_full_name}</span>
+                       <span className={`font-bold text-lg ${rule.is_active === false ? "text-gray-500 line-through" : ""}`}>
+                         {rule.github_repo_full_name}
+                       </span>
                        <span className="px-2 py-0.5 rounded text-xs bg-white/10 text-gray-300 border border-white/10 uppercase tracking-wider">{rule.trigger_event}</span>
+                       {rule.is_active === false && (
+                         <span className="px-2 py-0.5 rounded text-xs bg-yellow-500/20 text-yellow-400 border border-yellow-500/20 uppercase tracking-wider">PAUSED</span>
+                       )}
                      </div>
                      <div className="text-gray-400 text-sm flex items-center gap-2">
                        <ArrowRight className="w-4 h-4" />
                        Discord: #{rule.discord_channel_name}
                      </div>
                    </div>
-                   <form action="/api/rules/delete" method="POST">
-                     <input type="hidden" name="rule_id" value={rule.id} />
-                     <button className="text-red-400 hover:text-red-300 text-sm font-medium hover:bg-red-400/10 px-3 py-1.5 rounded transition-colors">
-                       Delete
-                     </button>
-                   </form>
+                   <div className="flex items-center gap-2">
+                     <form action="/api/rules/toggle" method="POST">
+                       <input type="hidden" name="rule_id" value={rule.id} />
+                       <input type="hidden" name="is_active" value={rule.is_active !== false ? "true" : "false"} />
+                       <button className={`text-sm font-medium px-3 py-1.5 rounded transition-colors ${rule.is_active !== false ? "text-yellow-400 hover:text-yellow-300 hover:bg-yellow-400/10" : "text-green-400 hover:text-green-300 hover:bg-green-400/10"}`}>
+                         {rule.is_active !== false ? "Pause" : "Resume"}
+                       </button>
+                     </form>
+                     <form action="/api/rules/delete" method="POST">
+                       <input type="hidden" name="rule_id" value={rule.id} />
+                       <button className="text-red-400 hover:text-red-300 text-sm font-medium hover:bg-red-400/10 px-3 py-1.5 rounded transition-colors">
+                         Delete
+                       </button>
+                     </form>
+                   </div>
                  </div>
                ))}
             </div>
