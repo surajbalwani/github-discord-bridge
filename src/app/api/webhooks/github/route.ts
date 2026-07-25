@@ -63,6 +63,16 @@ export async function POST(request: Request) {
           return NextResponse.json({ message: "Ignored unstar" });
         }
         break;
+      case "workflow_run":
+        const workflowName = payload.workflow?.name || "Workflow";
+        const status = payload.workflow_run?.conclusion || payload.workflow_run?.status;
+        const emoji = status === "success" ? "✅" : (status === "failure" ? "❌" : "⏳");
+        messageContent = `${emoji} Action **${workflowName}** ${status} in **${repoName}**\n[View Run](${payload.workflow_run?.html_url})`;
+        break;
+      case "release":
+        const releaseAction = payload.action;
+        messageContent = `🚀 Release **${releaseAction}**: **${payload.release?.name || payload.release?.tag_name}** in **${repoName}** by \`${sender}\`\n[View Release](${payload.release?.html_url})`;
+        break;
       default:
         messageContent = `🔔 New **${event}** event in **${repoName}** triggered by \`${sender}\`.`;
     }
@@ -83,11 +93,40 @@ export async function POST(request: Request) {
           }
         }
 
-        await fetch(rule.discord_webhook_url, {
+        // Prepare variables for template replacement
+        const branchName = payload.ref ? payload.ref.split("/").pop() : "";
+        const commitMessage = payload.head_commit?.message || payload.pull_request?.title || payload.issue?.title || "";
+        const actionUrl = payload.compare || payload.pull_request?.html_url || payload.issue?.html_url || payload.workflow_run?.html_url || payload.release?.html_url || "";
+
+        let finalMessage = messageContent;
+        
+        // 1. Custom Template
+        if (rule.custom_template) {
+          finalMessage = rule.custom_template
+            .replace(/{{author}}/g, sender || "Someone")
+            .replace(/{{repo_name}}/g, repoName || "Repository")
+            .replace(/{{branch}}/g, branchName || "branch")
+            .replace(/{{message}}/g, commitMessage || "No message")
+            .replace(/{{url}}/g, actionUrl || "");
+        }
+
+        // 2. Role Mention
+        if (rule.role_mention) {
+          finalMessage = `${rule.role_mention}\n${finalMessage}`;
+        }
+
+        // 3. Thread ID
+        let targetUrl = rule.discord_webhook_url;
+        if (rule.thread_id) {
+          const char = targetUrl.includes("?") ? "&" : "?";
+          targetUrl = `${targetUrl}${char}thread_id=${rule.thread_id}`;
+        }
+
+        await fetch(targetUrl, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            content: messageContent,
+            content: finalMessage,
             username: "GitBridge",
             avatar_url: "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png"
           }),

@@ -13,6 +13,9 @@ export async function POST(request: Request) {
   const repoRaw = formData.get("repo") as string;
   const event = formData.get("event") as string;
   const branchFilter = formData.get("branch_filter") as string;
+  const customTemplate = formData.get("custom_template") as string;
+  const roleMention = formData.get("role_mention") as string;
+  const threadId = formData.get("thread_id") as string;
 
   if (!repoRaw || !event) {
     return NextResponse.redirect(new URL("/dashboard/new?error=MissingFields", request.url));
@@ -28,6 +31,9 @@ export async function POST(request: Request) {
     github_repo_full_name: repoFullName,
     trigger_event: event,
     branch_filter: branchFilter || null,
+    custom_template: customTemplate || null,
+    role_mention: roleMention || null,
+    thread_id: threadId || null,
     discord_webhook_url: "pending", // Placeholder
     discord_channel_id: "pending",
     discord_channel_name: "pending",

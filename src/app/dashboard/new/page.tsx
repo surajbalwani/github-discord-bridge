@@ -114,6 +114,8 @@ export default async function NewRulePage() {
                 <option value="pull_request">Pull Requests</option>
                 <option value="issues">Issues</option>
                 <option value="star">Stars</option>
+                <option value="workflow_run">GitHub Actions (CI/CD)</option>
+                <option value="release">Releases</option>
                 <option value="*">Everything (All Events)</option>
               </select>
             </div>
@@ -128,6 +130,46 @@ export default async function NewRulePage() {
                 className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#5865F2]"
               />
               <p className="text-xs text-gray-500">Only applies to Push and Pull Request events.</p>
+            </div>
+
+            {/* Phase 3 Customizations */}
+            <div className="pt-4 border-t border-white/10 mt-4 space-y-4">
+              <h3 className="font-semibold text-[#5865F2]">Advanced Customization</h3>
+              
+              <div className="space-y-2">
+                <label htmlFor="custom_template" className="block text-sm font-medium text-gray-300">Custom Discord Message (Optional)</label>
+                <textarea 
+                  name="custom_template" 
+                  id="custom_template" 
+                  placeholder="e.g., Alert: {{author}} pushed to {{branch}} in {{repo_name}}"
+                  rows={2}
+                  className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#5865F2]"
+                ></textarea>
+                <p className="text-xs text-gray-500">Use {'{{author}}, {{repo_name}}, {{branch}}, {{message}}, {{url}}'} to customize the text.</p>
+              </div>
+
+              <div className="space-y-2">
+                <label htmlFor="role_mention" className="block text-sm font-medium text-gray-300">Discord Role Mention (Optional)</label>
+                <input 
+                  type="text" 
+                  name="role_mention" 
+                  id="role_mention" 
+                  placeholder="e.g., <@&123456789> or @everyone"
+                  className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#5865F2]"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label htmlFor="thread_id" className="block text-sm font-medium text-gray-300">Discord Thread ID (Optional)</label>
+                <input 
+                  type="text" 
+                  name="thread_id" 
+                  id="thread_id" 
+                  placeholder="e.g., 123456789012345678"
+                  className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#5865F2]"
+                />
+                <p className="text-xs text-gray-500">To send messages into a specific thread instead of the main channel.</p>
+              </div>
             </div>
           </div>
 
